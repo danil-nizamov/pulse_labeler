@@ -1,8 +1,11 @@
 import os
 import json
+from config_loader import exe_dir_path
 
 # Constants
 STATE_FILE = "labeling_state.json"
+if not os.path.isabs(STATE_FILE):
+    STATE_FILE = exe_dir_path(STATE_FILE)
 
 def save_state(file_path):
     with open(STATE_FILE, 'w') as f:

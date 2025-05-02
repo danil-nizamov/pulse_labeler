@@ -7,7 +7,7 @@ import sys
 import os
 import numpy as np
 import json
-from config_loader import load_config
+from config_loader import load_config, exe_dir_path
 from read_classes import NpzFileIterator, FileProcessor
 from scipy.optimize import curve_fit
 from state_saver import load_state, save_state
@@ -382,7 +382,11 @@ def main():
 
     config = load_config()
     directory = config.get("data_folder", "data_2600+")
+    if not os.path.isabs(directory):
+        directory = exe_dir_path(directory)
     selection_file = config.get("selections_file", "selections.json")
+    if not os.path.isabs(selection_file):
+        selection_file = exe_dir_path(selection_file)
 
     # Load the previous state
     state = load_state()
