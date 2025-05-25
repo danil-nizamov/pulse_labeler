@@ -1,0 +1,21 @@
+[
+    {
+        "file_name": "/Users/danilnizamov/PycharmProjects/disser_labeler/data_2600+/+current_50Ohm_2600V_30kHz_000718.npz",
+        "batch_size": 300,
+        "overlap_size": 50,
+        "selections": [
+            {
+                "start_index": 12767,
+                "end_index": 12809
+            },
+            {
+                "start_index": 12838,
+                "end_index": 12856
+            },
+            {
+                "start_index": 13561,
+                "end_index": 13594
+            }
+        ]
+    }
+]
