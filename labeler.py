@@ -158,7 +158,7 @@ class InteractivePlotter(QMainWindow):
 
             fp = FileProcessor(
                 self.batch_size, data,
-                filter_func=lambda data: max(np.abs(data)) > 0.5,
+                filter_func=lambda data: max(np.abs(data)) > 0.05,
                 overlap_size=self.overlap_size
             )
             self.current_batches = fp.split_into_batches()
