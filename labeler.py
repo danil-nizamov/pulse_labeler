@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QPushButton, QMessageBox   # === CHANGED ===
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QPushButton, QMessageBox
 from PyQt5.QtCore import Qt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -47,7 +47,7 @@ class InteractivePlotter(QMainWindow):
         self.zoom_window = None
         self.zoom_size = 0.00000003  # Size of the zoom window in seconds
 
-        # ==== NEW: To track which axvlines correspond to which region ====
+        # ==== NEW: Track which axvlines and their texts correspond to which region ====
         self.selection_lines = []
 
         self.initUI()
@@ -173,13 +173,22 @@ class InteractivePlotter(QMainWindow):
 
         self.ax.set_title(f"File: {self.current_file}\nBatch: {batch['batch_index']}")
 
-        # ==== UPDATED: Track axvline objects with their region for deletion ====
+        # ==== UPDATED: Track axvline/text objects with their region for deletion ====
         self.selection_lines = []
         for start, end in self.selected_points:
-            l1 = self.ax.axvline(x=start, color='g', linestyle='--', picker=5)
-            l2 = self.ax.axvline(x=end, color='r', linestyle='--', picker=5)
-            self.selection_lines.append((l1, (start, end), 'start'))
-            self.selection_lines.append((l2, (start, end), 'end'))
+            # --- Improved: start line (thick, bright green), labeled ---
+            l1 = self.ax.axvline(x=start, color='#00ff00', linestyle='--', linewidth=2.5, picker=5, zorder=10)
+            yloc = np.max(self.current_i) + 0.05
+            t1 = self.ax.text(start, yloc, "start", color='#00cc00', fontsize=9, fontweight='bold',
+                              ha='center', va='bottom', zorder=15, bbox=dict(facecolor='white', edgecolor='none', alpha=0.5, pad=1))
+
+            # --- Improved: end line (thick, bright red), labeled ---
+            l2 = self.ax.axvline(x=end, color='#ff3333', linestyle='--', linewidth=2.5, picker=5, zorder=10)
+            t2 = self.ax.text(end, yloc, "end", color='#ff3333', fontsize=9, fontweight='bold',
+                              ha='center', va='bottom', zorder=15, bbox=dict(facecolor='white', edgecolor='none', alpha=0.5, pad=1))
+
+            self.selection_lines.append((l1, t1, (start, end), 'start'))
+            self.selection_lines.append((l2, t2, (start, end), 'end'))
 
         # Remove old zoom window if it exists
         if self.zoom_window is not None:
@@ -285,11 +294,20 @@ class InteractivePlotter(QMainWindow):
             self.start_point = x
             start_idx = np.abs(self.current_t - x).argmin()
             self.fit_and_plot_curve(start_idx)
-            vline = self.ax.axvline(x=x, color='g', linestyle='--')
+            # -- ADD: Draw temp start line as thick green with label for feedback --
+            vline = self.ax.axvline(x=x, color='#00ff00', linestyle='--', linewidth=2.5, zorder=10)
+            yloc = np.max(self.current_i) + 0.05
+            t_start = self.ax.text(x, yloc, "start", color='#00cc00', fontsize=9, fontweight='bold',
+                                   ha='center', va='bottom', zorder=15, bbox=dict(facecolor='white', edgecolor='none', alpha=0.5, pad=1))
+            # Remove temp line and label on region close or redraw
             self.canvas.draw()
         else:
             end_point = x
-            vline = self.ax.axvline(x=x, color='r', linestyle='--')
+            # -- ADD: Draw end line as thick red with label --
+            vline = self.ax.axvline(x=x, color='#ff3333', linestyle='--', linewidth=2.5, zorder=10)
+            yloc = np.max(self.current_i) + 0.05
+            t_end = self.ax.text(x, yloc, "end", color='#ff3333', fontsize=9, fontweight='bold',
+                                 ha='center', va='bottom', zorder=15, bbox=dict(facecolor='white', edgecolor='none', alpha=0.5, pad=1))
             self.selected_points.append((self.start_point, end_point))
             # Find indices
             start_idx = np.abs(self.current_t - self.start_point).argmin()
@@ -316,7 +334,7 @@ class InteractivePlotter(QMainWindow):
         # Check all lines
         min_dist = float("inf")
         closest_region = None
-        for line, (start, end), which in self.selection_lines:
+        for line, text, (start, end), which in self.selection_lines:
             xpos = start if which == 'start' else end
             dist = abs(x - xpos)
             if dist < tolerance and dist < min_dist:

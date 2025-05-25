@@ -5,16 +5,16 @@
         "overlap_size": 50,
         "selections": [
             {
-                "start_index": 12767,
-                "end_index": 12809
+                "start_index": 12745,
+                "end_index": 12846
             },
             {
-                "start_index": 12838,
-                "end_index": 12856
+                "start_index": 13550,
+                "end_index": 13599
             },
             {
-                "start_index": 13561,
-                "end_index": 13594
+                "start_index": 13685,
+                "end_index": 13758
             }
         ]
     }
