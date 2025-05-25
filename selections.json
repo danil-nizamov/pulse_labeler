@@ -6,15 +6,15 @@
         "selections": [
             {
                 "start_index": 12767,
-                "end_index": 12818
+                "end_index": 12809
+            },
+            {
+                "start_index": 12838,
+                "end_index": 12856
             },
             {
                 "start_index": 13561,
-                "end_index": 13586
-            },
-            {
-                "start_index": 13695,
-                "end_index": 13754
+                "end_index": 13594
             }
         ]
     }

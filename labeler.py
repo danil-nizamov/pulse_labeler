@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QPushButton
+from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget, QPushButton, QMessageBox   # === CHANGED ===
 from PyQt5.QtCore import Qt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -247,8 +247,16 @@ class InteractivePlotter(QMainWindow):
         if event.inaxes != self.ax:
             return
         x = event.xdata
-        # ---------- NEW/UPDATED: Delete region if right-click near a selection line ----------
+
+        # === CHANGED/ADDED ===: Do not allow right-click deletion if region is unclosed
         if event.button == 3:  # Right click
+            if self.start_point is not None:
+                # Show a message box if user tries to remove while having unclosed region
+                QMessageBox.warning(self, "Unclosed Region",
+                                    "You cannot delete a region while you have an unclosed region.\n"
+                                    "Please finish or clear the unclosed region first.")
+                return
+
             region_to_delete = self._find_region_near_line(x)
             if region_to_delete is not None:
                 # Remove the region from selected_points
@@ -256,8 +264,6 @@ class InteractivePlotter(QMainWindow):
                     self.selected_points.remove(region_to_delete)
                 # Remove from file_selections as well
                 sel = self.file_selections.get(self.current_file, {}).get('selections', [])
-                # Find matching region by (start_index, end_index)
-                # Convert current region's times to global indices
                 current_batch = self.current_batches[self.current_batch_index]
                 t = self.current_t
                 start, end = region_to_delete
@@ -266,7 +272,6 @@ class InteractivePlotter(QMainWindow):
                 global_start_idx = current_batch['global_index'] + start_idx
                 global_end_idx = current_batch['global_index'] + end_idx
 
-                # Remove the exact pair (there may be floating point rounding, so check for near equality)
                 sel[:] = [item for item in sel if not (
                     abs(item['start_index'] - global_start_idx) <= 2 and
                     abs(item['end_index'] - global_end_idx) <= 2
@@ -321,6 +326,12 @@ class InteractivePlotter(QMainWindow):
     # -----------------------
 
     def next_plot(self):
+        # === CHANGED/ADDED === Don't allow to continue if region unclosed
+        if self.start_point is not None:
+            QMessageBox.warning(self, "Unclosed Region",
+                "There is an unclosed region. Please finish the selection before continuing to the next plot.")
+            return
+
         self.selected_points = []
         if self.fitted_line is not None:
             self.fitted_line.pop(0).remove()
